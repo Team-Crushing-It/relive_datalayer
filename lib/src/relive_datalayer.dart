@@ -5,8 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 class ReliveDataLayer {
-  Future<dynamic> upload(
-      File file, StreamController<String> progressStreamController) async {
+  Future<dynamic> upload(File file) async {
     Dio dio = Dio();
     String fileName = file.path.split('/').last;
     FormData formData = FormData.fromMap({
@@ -20,22 +19,20 @@ class ReliveDataLayer {
         onSendProgress: (received, total) {
           if (total != -1) {
             String progress = '${(received / total * 100).toStringAsFixed(0)}%';
-            progressStreamController.add(progress);
             print('${(received / total * 100).toStringAsFixed(0)}%');
           }
         },
       );
-    progressStreamController.close();
-    Map<String, dynamic> ipfsFileData = jsonDecode(response.data);
-    ipfsFileData["share link"] =
-        "https://relive-sharelink.herokuapp.com/preview?cid=${ipfsFileData["Hash"]}";
-    return jsonDecode(response.data);
+      print(response.data);
+      Map<String, dynamic> ipfsFileData =
+          json.decode(json.encode((response.data)));
+      ipfsFileData["share link"] =
+          "https://relive-sharelink.herokuapp.com/preview?cid=${ipfsFileData["Hash"]}";
+      return ipfsFileData;
     } on DioError catch (e) {
-      if(e.response != null){
-      return e.response?.data;
+      if (e.response != null) {
+        return e.response?.data;
       }
     }
   }
-
-  
 }
